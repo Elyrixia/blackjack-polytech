@@ -1,17 +1,14 @@
 package fr.polytech.blackjack
 
-import fr.polytech.blackjack.models.{Card, Rank, Suit}
-
-import scala.util.Random
+import scala.util.{Failure, Success}
 
 object Main extends App {
 
-  def initDeck =
-    for {
-      suit <- Suit.values
-      rank <- Rank.values
-    } yield Card(suit, rank)
+  val blackjack = new Blackjack(100)
 
-  println(Random.shuffle(initDeck))
+  blackjack.start() match {
+    case Success(result) => println(s"Good game !! Result $result")
+    case Failure(e) => println(s"Error while running the blackjack game \n$e")
+  }
 
 }
