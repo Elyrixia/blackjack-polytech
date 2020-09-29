@@ -27,4 +27,17 @@ object Hand {
 
   val blackjackValue: Int = 21
 
+  final case class Player(value: Hand) extends AnyVal {
+    def addCard(card: Card): Player = copy(value.addCard(card))
+  }
+  object Player {
+    def apply(cards: List[Card]): Player = Player(Hand(cards))
+  }
+  final case class Dealer(value: Hand) extends AnyVal {
+    def addCard(card: Card): Dealer = copy(value.addCard(card))
+  }
+  object Dealer {
+    def apply(cards: List[Card]): Dealer = Dealer(Hand(cards))
+  }
+
 }

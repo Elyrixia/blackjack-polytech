@@ -22,17 +22,21 @@ class Blackjack(initialCredits: Int) {
     readInt().filter(_ <= currentCredit)
   }
 
-  private def dealCards(deck: List[Card]): (Hand, Hand, List[Card]) = {
+  private def dealCards(deck: List[Card]): (Hand.Player, Hand.Dealer, List[Card]) = {
     val (firsTwoCards, rest) = deck.splitAt(2)
     val (nextTwoCards, end) = rest.splitAt(2)
-    (Hand(firsTwoCards), Hand(nextTwoCards), end)
+    (Hand.Player(firsTwoCards), Hand.Dealer(nextTwoCards), end)
   }
 
-  private def showHands(playerHand: Hand, dealerHand: Hand, maskDealerCards: Boolean): Unit = {
+  private def showHands(
+    playerHand: Hand.Player,
+    dealerHand: Hand.Dealer,
+    maskDealerCards: Boolean
+  ): Unit = {
     println()
     println("Current hands")
-    println(s"Dealer hand ${dealerHand.showCards(asDealer = maskDealerCards).mkString(",")}")
-    println(s"Player hand ${playerHand.showCards(asDealer = false).mkString(",")}")
+    println(s"Dealer hand ${dealerHand.value.showCards(asDealer = maskDealerCards).mkString(",")}")
+    println(s"Player hand ${playerHand.value.showCards(asDealer = false).mkString(",")}")
   }
 
   private def checkCurrentResultForHand(hand: Hand): Blackjack.Result = {
@@ -41,17 +45,24 @@ class Blackjack(initialCredits: Int) {
     else Blackjack.Result.Unknown
   }
 
-  private def checkFinalResult(playerHand: Hand, dealerHand: Hand): Blackjack.Result = {
-    if (dealerHand.isBlackJack) Blackjack.Result.Loser
-    else if (playerHand.isBlackJack) Blackjack.Result.Blackjack
-    else if (playerHand.isBust) Blackjack.Result.Busted
-    else if (dealerHand.isBust || playerHand.winsOver(dealerHand)) Blackjack.Result.Winner
+  private def checkFinalResult(
+    playerHand: Hand.Player,
+    dealerHand: Hand.Dealer
+  ): Blackjack.Result = {
+    if (dealerHand.value.isBlackJack) Blackjack.Result.Loser
+    else if (playerHand.value.isBlackJack) Blackjack.Result.Blackjack
+    else if (playerHand.value.isBust) Blackjack.Result.Busted
+    else if (dealerHand.value.isBust || playerHand.value.winsOver(dealerHand.value)) Blackjack.Result.Winner
     else Blackjack.Result.Loser
   }
 
-  private def playerSteps(playerHand: Hand, deck: List[Card], dealerHand: Hand): Try[(Hand, List[Card])] = {
+  private def playerSteps(
+    playerHand: Hand.Player,
+    deck: List[Card],
+    dealerHand: Hand.Dealer
+  ): Try[(Hand.Player, List[Card])] = {
     showHands(playerHand, dealerHand, maskDealerCards = true)
-    checkCurrentResultForHand(playerHand) match {
+    checkCurrentResultForHand(playerHand.value) match {
       case Blackjack.Result.Blackjack | Blackjack.Result.Busted =>
         Success((playerHand, deck))
 
@@ -81,11 +92,15 @@ class Blackjack(initialCredits: Int) {
 
   }
 
-  private def dealerSteps(dealerHand: Hand, deck: List[Card], playerHand: Hand): Try[(Hand, List[Card])] = {
+  private def dealerSteps(
+    dealerHand: Hand.Dealer,
+    deck: List[Card],
+    playerHand: Hand.Player
+  ): Try[(Hand.Dealer, List[Card])] = {
     showHands(playerHand, dealerHand, maskDealerCards = false)
-    if (dealerHand.value >= 17) Success((dealerHand, deck))
+    if (dealerHand.value.value >= 17) Success((dealerHand, deck))
     else {
-      checkCurrentResultForHand(dealerHand) match {
+      checkCurrentResultForHand(dealerHand.value) match {
         case Blackjack.Result.Blackjack | Blackjack.Result.Busted =>
           Success((dealerHand, deck))
 
@@ -109,7 +124,7 @@ class Blackjack(initialCredits: Int) {
       (playerHand, dealerHand, restOfTheDeck) = dealCards(deck)
       _ = showHands(playerHand, dealerHand, maskDealerCards = true)
       (playerHand, restOfTheDeck) <- {
-        if (playerHand.isBlackJack)
+        if (playerHand.value.isBlackJack)
           Success((playerHand, restOfTheDeck))
         else {
           println()
@@ -118,7 +133,7 @@ class Blackjack(initialCredits: Int) {
         }
       }
       (dealerHand, restOfTheDeck) <- {
-        if (playerHand.isBlackJack || playerHand.isBust)
+        if (playerHand.value.isBlackJack || playerHand.value.isBust)
           Success(dealerHand, restOfTheDeck)
         else {
           println()
