@@ -32,6 +32,8 @@ lazy val core = (project in file("core"))
   .settings(commonSettings)
   .settings(
     libraryDependencies ++= Seq(
-      "com.beachape" %% "enumeratum" % "1.6.0"
+      "com.beachape" %% "enumeratum" % "1.6.0",
+      "org.scalactic" %% "scalactic" % "3.2.0" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.0" % "test"
     )
   )

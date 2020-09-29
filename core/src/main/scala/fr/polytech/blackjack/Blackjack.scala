@@ -8,18 +8,17 @@ import scala.util.{Random, Success, Try}
 class Blackjack(initialCredits: Int) {
 
   private def readString(message: String): Try[String] = Try(StdIn.readLine(message + ": "))
-  private def readInt(): Try[Int] = Try(StdIn.readInt())
 
-  private def startNewRound(credit: Int, deck: List[Card]): Either[Throwable, Unit] = {
+  def startNewRound(credit: Int, deck: List[Card]): Either[Throwable, Unit] = {
     if (credit <= 0) Left(new Throwable("You cannot start a new round because you don't have any more money"))
     else if (deck.size < 10) Left(new Throwable("There is not enough cards to continue, please start a new game"))
     else Right(())
   }
 
-  private def bet(currentCredit: Int): Try[Int] = {
+  def bet(currentCredit: Int, readInt: => Try[Int]): Try[Int] = {
     println(s"Please enter your bet for this round. Current credit : $currentCredit")
     println()
-    readInt().filter(_ <= currentCredit)
+    readInt.filter(_ <= currentCredit)
   }
 
   private def dealCards(deck: List[Card]): (Hand.Player, Hand.Dealer, List[Card]) = {
@@ -120,7 +119,7 @@ class Blackjack(initialCredits: Int) {
   ): Try[(Int, Int, List[Card], Blackjack.Result)] = {
     for {
       _ <- startNewRound(credits, deck).toTry
-      betValue <- bet(credits)
+      betValue <- bet(credits, Try(StdIn.readInt()))
       (playerHand, dealerHand, restOfTheDeck) = dealCards(deck)
       _ = showHands(playerHand, dealerHand, maskDealerCards = true)
       (playerHand, restOfTheDeck) <- {
