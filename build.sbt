@@ -1,24 +1,7 @@
-lazy val javaVersion = "15.0.0"
-
 lazy val commonSettings = Seq(
   organization := "fr.polytech",
   scalaVersion := "2.13.3",
   cancelable in Global := true,
-  initialize := {
-    initialize.value
-    val actualMajorVersion = sys.props("java.specification.version")
-    javaVersion.split('.').headOption match {
-      case Some(expectedMajorVersion) =>
-        assert(
-          actualMajorVersion == expectedMajorVersion,
-          s"unsupported JDK$actualMajorVersion detected, please use JDK$expectedMajorVersion instead"
-        )
-      case None =>
-        throw new Exception(
-          "no correct java.version was defined inside build.properties for the project"
-        )
-    }
-  }
 )
 
 lazy val root = (project in file("."))
